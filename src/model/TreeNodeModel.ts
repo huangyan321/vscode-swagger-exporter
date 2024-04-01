@@ -6,7 +6,19 @@ export interface ITreeDataNormal {
   name: string;
   rootNodeSortId: any;
   location: string;
+  toolTip?: string;
+  collapsibleState?: any;
 }
+// 类节点数据
+export interface ITreeDataTag {
+  id: string;
+  name: string;
+  rootNodeSortId: any;
+  location: string;
+  toolTip?: string;
+  children?: ITreeDataNormal[];
+}
+
 // 查询节点
 export interface ITreeDataSearch {
   id: string;
@@ -17,13 +29,14 @@ export interface ITreeDataSearch {
 }
 
 export enum TreeNodeType {
-  TreeDataNormal = 1, // 普通根
-  TreeDataLeaf = 2, // 普通叶子
+  TreeDataNormal = 1, // 根节点
+  TreeDataLeaf1 = 2, // 类节点
+  TreeDataLeaf2 = 3, // api节点
 }
 export class TreeNodeModel {
   __DataPool: Map<TreeNodeType, any> = new Map<TreeNodeType, any>();
   constructor(
-    data: ITreeDataNormal | ITreeDataSearch,
+    data: ITreeDataNormal | ITreeDataSearch | ITreeDataTag,
     public nodeType: TreeNodeType
   ) {
     this.init_data(data);
@@ -33,8 +46,15 @@ export class TreeNodeModel {
   }
 
   public get_data() {
-    console.log('get_data被调用');
-    
     return this.__DataPool.get(this.nodeType);
+  }
+  public get name(): string {
+    return this.get_data()?.name || '';
+  }
+  public get id(): string {
+    return this.get_data()?.name || "";
+  }
+  public get collapsibleState() {
+    return this.get_data()?.collapsibleState;
   }
 }
