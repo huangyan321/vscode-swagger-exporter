@@ -10,27 +10,23 @@ export class CodeGenerator {
     this.swagger = swagger
     this.path = path
     this.template = `
-/**
- * {{description}}
- **/
-export function {{ name }}({{params}}) {
-  return request({
-    url: '{{{path}}}',
-    method: '{{method}}',{{extend}}
-  })
-}`
+    /**
+     * @title    {{title}}
+     * @tags     {{tags}}
+     * @summary  {{summary}}
+     * @desc     {{description}}
+     */
+    export function {{name}}({{params}}) {
+      return request({
+           url: '{{&path}}',
+           method: '{{method}}',{{#params}}
+            {{params}}{{/params}}
+          });
+    }`
   }
 
   public codeGen() {
-    const schema = this.swagger.getSchemaByPath(this.path)
-
-    const context = {
-      name: schema.operationId,
-      path: this.path,
-      description: schema.description,
-      method: schema.method,
-    }
-    const code = Mustache.render(this.template, context)
+    const code = Mustache.render(this.template, this.swagger.getSchemaByPath(this.path))
     return code
   }
 }

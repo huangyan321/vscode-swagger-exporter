@@ -1,4 +1,4 @@
-// swagger 解析类
+// swagger  存储一组接口
 import type { Definitions, SwaggerApiGroupResponse } from './fetch'
 
 export class Swagger {
@@ -76,6 +76,30 @@ export class Swagger {
 
   public getSchemaByPath(path: string) {
     const rawSchema = this.paths[path]
-    return rawSchema
+    const title = rawSchema.description
+    const tags = rawSchema.tags
+    const summary = rawSchema.summary
+    const method = rawSchema.method
+    const description = rawSchema.description
+    const parameters = rawSchema.parameters ?? []
+    const name = rawSchema.operationId
+    const headerParameters = parameters.filter((e: any) => e.in === 'header')
+    const queryParameters = parameters.filter((e: any) => e.in === 'query')
+    const pathParameters = parameters.filter((e: any) => e.in === 'path')
+    const bodyParameters = parameters.filter((e: any) => e.in === 'body')
+
+    return {
+      title,
+      name,
+      path,
+      tags,
+      summary,
+      method,
+      description,
+      headerParameters,
+      queryParameters,
+      pathParameters,
+      bodyParameters,
+    }
   }
 }
