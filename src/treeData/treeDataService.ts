@@ -1,19 +1,19 @@
 /** @format */
-import * as vscode from 'vscode'
+import type { Event, TreeDataProvider, TreeItem } from 'vscode'
+import { EventEmitter, TreeItemCollapsibleState } from 'vscode'
+
 import { TreeNodeModel, TreeNodeType } from '../model/TreeNodeModel'
 import { treeViewController } from '../controller/TreeViewController'
 
-export class TreeDataService implements vscode.TreeDataProvider<TreeNodeModel> {
-  private context: vscode.ExtensionContext
-  private onDidChangeTreeDataEvent: vscode.EventEmitter<
-    TreeNodeModel | undefined | null
-  > = new vscode.EventEmitter<TreeNodeModel | undefined | null>()
+export class TreeDataService implements TreeDataProvider<TreeNodeModel> {
+  private onDidChangeTreeDataEvent: EventEmitter<TreeNodeModel | undefined | null> = new EventEmitter<
+  TreeNodeModel | undefined | null
+>()
 
-  public readonly onDidChangeTreeData: vscode.Event<any>
-    = this.onDidChangeTreeDataEvent.event
+  // tslint:disable-next-line:member-ordering
+  public readonly onDidChangeTreeData: Event<any> = this.onDidChangeTreeDataEvent.event
 
-  public initialize(context: vscode.ExtensionContext): void {
-    this.context = context
+  public initialize(): void {
   }
 
   public fire() {
@@ -22,16 +22,25 @@ export class TreeDataService implements vscode.TreeDataProvider<TreeNodeModel> {
 
   public getTreeItem(
     element: TreeNodeModel,
-  ): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  ): TreeItem | Thenable<TreeItem> {
     if (element.id === 'notSignIn') {
       return {
         label: element.get_data().name,
-        collapsibleState: vscode.TreeItemCollapsibleState.None, // 没有子节点
+        collapsibleState: TreeItemCollapsibleState.None, // 没有子节点
       }
     }
+    let contextValue: string
+    if (element.nodeType === TreeNodeType.Resource)
+      contextValue = 'ApiResource'
+    else if (element.nodeType === TreeNodeType.Group)
+      contextValue = 'ApiGroup'
+    else
+      contextValue = 'ApiItem'
+
     return {
       label: element.name,
       collapsibleState: element.collapsibleState,
+      contextValue,
     }
   }
 
@@ -39,26 +48,29 @@ export class TreeDataService implements vscode.TreeDataProvider<TreeNodeModel> {
     element?: TreeNodeModel | undefined,
   ): Promise<TreeNodeModel[] | null | undefined> {
     if (!element) {
-      const res = await treeViewController.getRootNodes()
+      const res = await treeViewController.getResourceNodes()
       return res
     }
-    if (element.nodeType === TreeNodeType.TreeDataNormal) {
-      const res = await treeViewController.getTagNodes(
+    if (element.nodeType === TreeNodeType.Resource) {
+      const res = await treeViewController.getGroupNodes(
         element.get_data().location,
       )
       return res
     }
-    if (element.nodeType === TreeNodeType.TreeDataLeaf1) {
-      const res = element.get_data().children?.map((item: any) => {
+    if (element.nodeType === TreeNodeType.Group) {
+      const data = element.get_data()
+      const res = data.children?.map((item: any) => {
         return new TreeNodeModel(
           {
-            id: item.post?.description ?? 'unknow',
-            name: item.post?.description ?? 'unknow',
+            id: item.schema?.description ?? 'unknown',
+            name: item.schema?.description ?? 'unknown',
             rootNodeSortId: 2,
-            collapsibleState: vscode.TreeItemCollapsibleState.None,
+            collapsibleState: TreeItemCollapsibleState.None,
             location: '',
+            children: item,
+            swaggerInstance: data.swaggerInstance,
           },
-          TreeNodeType.TreeDataLeaf2,
+          TreeNodeType.Api,
         )
       })
       return res

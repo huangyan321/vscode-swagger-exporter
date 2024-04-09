@@ -24,7 +24,7 @@
     "Other"
   ],
   "main": "./dist/index.js",
-  "icon": "res/icon.png",
+  "icon": "resources/icon.png",
   "files": [
     "dist"
   ],
@@ -57,6 +57,14 @@
       {
         "command": "swagger-exporter.start",
         "title": "Run Swagger Exporter"
+      },
+      {
+        "command": "swagger-exporter.addFavorite",
+        "title": "添加到当前文件",
+        "icon": {
+          "light": "resources/light/like.png",
+          "dark": "resources/dark/like.png"
+        }
       }
     ],
     "keybindings": [
@@ -84,6 +92,15 @@
           "contextualTitle": "Swagger Exporter"
         }
       ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "swagger-exporter.addFavorite",
+          "when": "view == ApiExplorer && viewItem === ApiItem",
+          "group": "inline"
+        }
+      ]
     }
   },
   "scripts": {
@@ -98,11 +115,13 @@
     "release": "bumpp && nr publish"
   },
   "dependencies": {
-    "axios": "^1.6.8"
+    "axios": "^1.6.8",
+    "mustache": "^4.2.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^1.1.1",
     "@antfu/ni": "^0.21.9",
+    "@types/mustache": "^4.2.5",
     "@types/node": "^20.9.0",
     "@types/vscode": "^1.84.1",
     "@vscode/vsce": "^2.22.0",

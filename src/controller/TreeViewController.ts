@@ -1,12 +1,13 @@
 /** @format */
 
 import { TreeItemCollapsibleState } from 'vscode'
-import { getApiDocs, getSwaggerResource } from '../fetch'
+import { getApiGroup, getSwaggerResource } from '../fetch'
 import { Config } from '../config'
 import { TreeNodeModel, TreeNodeType } from '../model/TreeNodeModel'
+import { Swagger } from '../swagger'
 
 class TreeViewController {
-  async getRootNodes() {
+  async getResourceNodes() {
     const cookie = Config.cookie
     const resource = Config.resource
     const res = await getSwaggerResource(resource, cookie)
@@ -19,47 +20,34 @@ class TreeViewController {
           location: item.location,
           collapsibleState: TreeItemCollapsibleState.Collapsed,
         },
-        TreeNodeType.TreeDataNormal,
+        TreeNodeType.Resource,
       )
     })
     return baseNode
   }
 
-  async getTagNodes(location: string) {
+  async getGroupNodes(location: string) {
     const cookie = Config.cookie
     try {
-      const res = await getApiDocs(
+      const res = await getApiGroup(
         `http://192.168.96.104:9700/swp/${location}`,
         cookie,
       )
-      const paths = Object.entries(res!.paths).reduce((acc, [path, value]) => {
-        // 假设只有post方法
-        const _value = value.post
-        if (!_value)
-          return acc
-        const tag = _value.tags[0]
-        if (!acc[tag])
-          acc[tag] = []
+      const swagger = new Swagger(res!)
 
-        acc[tag].push({
-          path,
-          ...value,
-        })
-        return acc
-      }, {} as any)
-
-      const baseNode: TreeNodeModel[] = Object.entries(paths).map(
-        ([name, value]) => {
+      const baseNode: TreeNodeModel[] = Object.entries(swagger.groups).map(
+        ([name, children]) => {
           return new TreeNodeModel(
             {
               id: name,
               name,
               rootNodeSortId: 2,
               location,
-              children: value as any,
+              children,
+              swaggerInstance: swagger,
               collapsibleState: TreeItemCollapsibleState.Collapsed,
             },
-            TreeNodeType.TreeDataLeaf1,
+            TreeNodeType.Group,
           )
         },
       )

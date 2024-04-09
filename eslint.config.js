@@ -10,6 +10,9 @@ module.exports = antfu(
   {
     rules: {
       // overrides
+      'ts/no-namespace': 'off',
+      'ts/ban-ts-comment': 'off',
+      'unused-imports/no-unused-vars': 'off',
     },
   },
 )

@@ -3,8 +3,9 @@
 import { commands, window, workspace } from 'vscode'
 import type { ExtensionContext } from 'vscode'
 import { Config } from './config'
-import { getSwaggerResource } from './fetch'
 import { treeDataService } from './treeData/treeDataService'
+import type { TreeNodeModel } from './model/TreeNodeModel'
+import { CodeGenerator } from './CodeGenerator'
 
 export function activate(context: ExtensionContext) {
   const workUri = workspace?.workspaceFolders?.[0]?.uri
@@ -19,6 +20,20 @@ export function activate(context: ExtensionContext) {
     window.createTreeView('ApiExplorer', {
       treeDataProvider: treeDataService,
       showCollapseAll: true,
+    }),
+    commands.registerCommand('swagger-exporter.addFavorite', (node: TreeNodeModel) => {
+      const data = node.get_data()
+
+      const { path } = data.children
+
+      const code = new CodeGenerator(path, data.swaggerInstance).codeGen()
+
+      window.activeTextEditor?.edit((editBuilder) => {
+        editBuilder.insert({
+          line: 0,
+          character: 0,
+        }, code)
+      })
     }),
   )
 }
