@@ -22,11 +22,8 @@ export function activate(context: ExtensionContext) {
       showCollapseAll: true,
     }),
     commands.registerCommand('swagger-exporter.addFavorite', (node: TreeNodeModel) => {
-      const data = node.get_data()
-
-      const { path } = data.children
-
-      const code = new CodeGenerator(path, data.swaggerInstance).codeGen()
+      const template = ``
+      const code = new CodeGenerator(node, template).codeGen()
 
       window.activeTextEditor?.edit((editBuilder) => {
         editBuilder.insert({

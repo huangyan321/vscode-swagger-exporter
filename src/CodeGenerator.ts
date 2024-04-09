@@ -1,14 +1,17 @@
 import Mustache from 'mustache'
 import type { Swagger } from './swagger'
+import type { TreeNodeModel } from './model/TreeNodeModel'
 
 export class CodeGenerator {
-  template: string
+  path: string
+  swagger: Swagger
   constructor(
-    public readonly path: string,
-    public readonly swagger: Swagger,
+    private readonly node: TreeNodeModel,
+    private readonly template: string,
   ) {
-    this.swagger = swagger
-    this.path = path
+    const nodeData = node.get_data()
+    this.swagger = nodeData.swaggerInstance as Swagger
+    this.path = nodeData.children.path
     this.template = `
     /**
      * @title    {{title}}
@@ -25,8 +28,12 @@ export class CodeGenerator {
     }`
   }
 
+  private combine() {
+    const views = this.swagger.getSchemaByPath(this.path)
+    return Mustache.render(this.template, views)
+  }
+
   public codeGen() {
-    const code = Mustache.render(this.template, this.swagger.getSchemaByPath(this.path))
-    return code
+    return this.combine()
   }
 }

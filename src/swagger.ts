@@ -76,6 +76,7 @@ export class Swagger {
 
   public getSchemaByPath(path: string) {
     const rawSchema = this.paths[path]
+
     const title = rawSchema.description
     const tags = rawSchema.tags
     const summary = rawSchema.summary
