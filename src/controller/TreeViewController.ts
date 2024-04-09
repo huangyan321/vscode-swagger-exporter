@@ -1,14 +1,15 @@
 /** @format */
 
-import { getSwaggerResource, getApiDocs } from '../fetch';
-import { workspace, window, TreeItemCollapsibleState } from 'vscode';
-import { Config } from '../config';
-import { TreeNodeModel, TreeNodeType } from '../model/TreeNodeModel';
+import { TreeItemCollapsibleState } from 'vscode'
+import { getApiDocs, getSwaggerResource } from '../fetch'
+import { Config } from '../config'
+import { TreeNodeModel, TreeNodeType } from '../model/TreeNodeModel'
+
 class TreeViewController {
   async getRootNodes() {
-    const cookie = Config.cookie;
-    const resource = Config.resource;
-    const res = await getSwaggerResource(resource, cookie);
+    const cookie = Config.cookie
+    const resource = Config.resource
+    const res = await getSwaggerResource(resource, cookie)
     const baseNode: TreeNodeModel[] = res!.map((item) => {
       return new TreeNodeModel(
         {
@@ -18,55 +19,54 @@ class TreeViewController {
           location: item.location,
           collapsibleState: TreeItemCollapsibleState.Collapsed,
         },
-        TreeNodeType.TreeDataNormal
-      );
-    });
-    return baseNode;
+        TreeNodeType.TreeDataNormal,
+      )
+    })
+    return baseNode
   }
+
   async getTagNodes(location: string) {
-    const cookie = Config.cookie;
-    const resource = Config.resource;
+    const cookie = Config.cookie
     try {
       const res = await getApiDocs(
-        'http://192.168.96.104:9700/swp/' + location,
-        cookie
-      );
-      const tags = res!.tags;
-
+        `http://192.168.96.104:9700/swp/${location}`,
+        cookie,
+      )
       const paths = Object.entries(res!.paths).reduce((acc, [path, value]) => {
         // 假设只有post方法
-        const _value = value.post;
-        if (!_value) return acc;
-        const tag = _value.tags[0];
-        if (!acc[tag]) {
-          acc[tag] = [];
-        }
+        const _value = value.post
+        if (!_value)
+          return acc
+        const tag = _value.tags[0]
+        if (!acc[tag])
+          acc[tag] = []
+
         acc[tag].push({
-          path: path,
+          path,
           ...value,
-        });
-        return acc;
-      }, {} as any);
+        })
+        return acc
+      }, {} as any)
 
       const baseNode: TreeNodeModel[] = Object.entries(paths).map(
         ([name, value]) => {
           return new TreeNodeModel(
             {
               id: name,
-              name: name,
+              name,
               rootNodeSortId: 2,
-              location: location,
+              location,
               children: value as any,
               collapsibleState: TreeItemCollapsibleState.Collapsed,
             },
-            TreeNodeType.TreeDataLeaf1
-          );
-        }
-      );
-      return baseNode;
-    } catch (err) {
-      console.log(err);
+            TreeNodeType.TreeDataLeaf1,
+          )
+        },
+      )
+      return baseNode
+    }
+    catch (err) {
     }
   }
 }
-export const treeViewController = new TreeViewController();
+export const treeViewController = new TreeViewController()
