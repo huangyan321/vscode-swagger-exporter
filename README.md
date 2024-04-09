@@ -1,15 +1,26 @@
-# ext-name
+# vscode-swagger-exporter
 
-<a href="https://marketplace.visualstudio.com/items?itemName=antfu.ext-name" target="__blank"><img src="https://img.shields.io/visual-studio-marketplace/v/antfu.ext-name.svg?color=eee&amp;label=VS%20Code%20Marketplace&logo=visual-studio-code" alt="Visual Studio Marketplace Version" /></a>
+用于一键导出swagger api 到指定js/ts文件
 
-## Sponsors
+## 配置
 
-<p align="center">
-  <a href="https://cdn.jsdelivr.net/gh/antfu/static/sponsors.svg">
-    <img src='https://cdn.jsdelivr.net/gh/antfu/static/sponsors.png'/>
-  </a>
-</p>
+- url: swagger服务接口地址
+- cookie: swagger服务cookie
+- template: 代码模板，使用mustache生成，可使用mustache语法
 
-## License
-
-[MIT](./LICENSE) License © 2022 [Anthony Fu](https://github.com/antfu)
+```js
+`
+    /**
+     * @title    {{title}}
+     * @tags     {{tags}}
+     * @summary  {{summary}}
+     * @desc     {{description}}
+     */
+    export function {{name}}({{params}}) {
+      return request({
+           url: '{{&path}}',
+           method: '{{method}}',{{#params}}
+            {{params}}{{/params}}
+          });
+    }`
+```
